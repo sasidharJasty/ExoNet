@@ -1,9 +1,9 @@
-export const BASE_URL = "https://18.216.215.3"; // replace with your domain or local ip address of backend server
+export const BASE_URL = "https://www.exonet.codes/"; // replace with your domain or local ip address of backend server
 
 // If true, when backend requests fail or return empty results, fall back to the
 // bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
 // rely on the backend.
-export const LOCAL_CATALOG_FALLBACK = true;
+export const LOCAL_CATALOG_FALLBACK = false;
 export const LOCAL_CATALOG_PATH = "/combined_catalog.csv"; // Model was already ran on this file
 
 let _localCatalogCache = null;
