@@ -1,91 +1,101 @@
-export const BASE_URL = "https://18.216.215.3"; //replace with your domain or local ip address of backend server
+export const BASE_URL = "https://18.216.215.3"; // replace with your domain or local ip address of backend server
 
+// If true, when backend requests fail or return empty results, fall back to the
+// bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
+// rely on the backend.
+export const LOCAL_CATALOG_FALLBACK = true;
+export const LOCAL_CATALOG_PATH = "/combined_catalog.csv"; // Model was already ran on this file
 
-export async function fetchStars() {
-  // Try backend first. If it fails or returns no rows, fall back to the bundled
-  // CSV at /combined_catalog.csv (served from the frontend public folder).
-  try {
-    const res = await fetch(`${BASE_URL}/stars`);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data;
-      }
-      console.warn("fetchStars: backend returned no data, falling back to local CSV");
-    } else {
-      const text = await res.text().catch(() => "");
-      console.warn(`fetchStars: backend returned ${res.status} ${text}, falling back to local CSV`);
-    }
-  } catch (err) {
-    console.warn("fetchStars backend error, falling back to local CSV:", err);
-  }
+let _localCatalogCache = null;
 
-  // Fallback: load combined_catalog.csv from public/ and parse it.
-  try {
-    const csvRes = await fetch("/combined_catalog.csv");
-    if (!csvRes.ok) {
-      const txt = await csvRes.text().catch(() => "");
-      throw new Error(`Failed to load local combined_catalog.csv: ${csvRes.status} ${txt}`);
-    }
-    const text = await csvRes.text();
-    const rows = parseCsv(text);
-    return rows;
-  } catch (err) {
-    console.error("fetchStars fallback CSV error:", err);
-    // Re-throw so callers know nothing could be loaded
-    throw err;
-  }
-}
+const isNumericString = (s) => /^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(String(s).trim());
 
-// Minimal CSV parser that handles quoted fields and returns array of objects.
-function parseCsv(text) {
-  if (!text) return [];
-  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
-  if (lines.length === 0) return [];
-  const headers = splitCsvLine(lines[0]);
-  const rows = [];
-  for (let i = 1; i < lines.length; i += 1) {
-    const parts = splitCsvLine(lines[i]);
-    if (parts.length === 0) continue;
-    const obj = {};
-    for (let j = 0; j < headers.length; j += 1) {
-      const key = headers[j] ?? `col${j}`;
-      let val = parts[j] ?? "";
-      // Try to coerce numeric-looking values to numbers
-      const num = Number(val);
-      if (val !== "" && !Number.isNaN(num)) {
-        val = num;
-      }
-      obj[key] = val;
-    }
-    rows.push(obj);
-  }
-  return rows;
-}
-
-function splitCsvLine(line) {
-  const result = [];
+const splitCSVLine = (line) => {
+  const out = [];
   let cur = "";
-  let inQuote = false;
+  let inQuotes = false;
   for (let i = 0; i < line.length; i += 1) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuote && line[i + 1] === '"') {
-        // escaped quote
+      if (inQuotes && line[i + 1] === '"') {
         cur += '"';
-        i += 1;
+        i += 1; // skip escaped quote
       } else {
-        inQuote = !inQuote;
+        inQuotes = !inQuotes;
       }
-    } else if (ch === ',' && !inQuote) {
-      result.push(cur);
-      cur = '';
+    } else if (ch === ',' && !inQuotes) {
+      out.push(cur);
+      cur = "";
     } else {
       cur += ch;
     }
   }
-  result.push(cur);
-  return result.map((s) => s.trim());
+  out.push(cur);
+  return out;
+};
+
+const parseCSV = (text) => {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return [];
+  const header = splitCSVLine(lines[0]).map((h) => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const parts = splitCSVLine(lines[i]);
+    if (parts.length === 0) continue;
+    const obj = {};
+    for (let j = 0; j < header.length; j += 1) {
+      const key = header[j] || `col_${j}`;
+      let val = parts[j] === undefined ? "" : parts[j].trim();
+      // unescape quoted values
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.slice(1, -1).replace(/""/g, '"');
+      }
+      if (val === "") {
+        obj[key] = null;
+      } else if (isNumericString(val)) {
+        obj[key] = parseFloat(val);
+      } else {
+        obj[key] = val;
+      }
+    }
+    rows.push(obj);
+  }
+  return rows;
+};
+
+const loadLocalCatalog = async () => {
+  if (_localCatalogCache) return _localCatalogCache;
+  try {
+    const res = await fetch(LOCAL_CATALOG_PATH);
+    if (!res.ok) throw new Error(`Failed to fetch local catalog: ${res.status}`);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    _localCatalogCache = rows;
+    return rows;
+  } catch (err) {
+    console.error("loadLocalCatalog error:", err);
+    _localCatalogCache = [];
+    return _localCatalogCache;
+  }
+};
+
+
+export async function fetchStars() {
+  try {
+    const res = await fetch(`${BASE_URL}/stars`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Failed to fetch stars: ${res.status} ${text}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("fetchStars error:", err);
+    if (LOCAL_CATALOG_FALLBACK) {
+      const local = await loadLocalCatalog();
+      if (local && local.length > 0) return local;
+    }
+    throw err;
+  }
 }
 
 export async function fetchStarById(starId) {
@@ -98,6 +108,19 @@ export async function fetchStarById(starId) {
     return await res.json();
   } catch (err) {
     console.error(`fetchStarById error for ${starId}:`, err);
+    if (LOCAL_CATALOG_FALLBACK) {
+      const local = await loadLocalCatalog();
+      if (local && local.length > 0) {
+        // try to match by common id fields
+        const match = local.find((row) => {
+          const candidates = [row.target_id, row.id, row.name, row.kepler_id, row.tic_id]
+            .filter(Boolean)
+            .map((v) => String(v));
+          return candidates.includes(String(starId));
+        });
+        if (match) return match;
+      }
+    }
     throw err;
   }
 }
