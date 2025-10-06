@@ -57,10 +57,16 @@ app = FastAPI(
     version="0.4"
 )
 # Allow CORS from all origins (for dev)
+origins = [
+    "https://exo-net.vercel.app",
+    "https://www.exo-net.vercel.app"  # add any variants you use
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=origins,
+    allow_credentials=True,       # set True if you send cookies / auth
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
