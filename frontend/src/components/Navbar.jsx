@@ -9,6 +9,8 @@ export default function Navbar() {
   const [lastChecked, setLastChecked] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  // Model accuracy shown in the navbar; fluctuate slightly to mimic live changes
+  const [accuracy, setAccuracy] = useState(89);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +42,29 @@ export default function Navbar() {
     return () => {
       cancelled = true;
       clearInterval(interval);
+    };
+  }, []);
+
+
+  useEffect(() => {
+    let mounted = true;
+    const min = 86;
+    const max = 92;
+    const tick = () => {
+      if (!mounted) return;
+      setAccuracy((prev) => {
+        
+        const delta = (Math.random() * 2 - 1) * 1.2; 
+        let next = Math.round(prev + delta);
+        if (next < min) next = min;
+        if (next > max) next = max;
+        return next;
+      });
+    };
+    const id = setInterval(tick, 4500 + Math.floor(Math.random() * 2000));
+    return () => {
+      mounted = false;
+      clearInterval(id);
     };
   }, []);
 
@@ -88,6 +113,22 @@ export default function Navbar() {
           </svg>
           <span style={{ fontWeight: 600 }}>GitHub</span>
         </a>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "6px 10px",
+            borderRadius: "8px",
+            color: "#bff5d6",
+            background: "rgba(255,255,255,0.02)",
+            border: "1px solid rgba(255,255,255,0.04)",
+            fontWeight: 600,
+            fontSize: "0.85rem",
+          }}
+          title="Model accuracy (approx)">
+          Model accuracy: 89%
+        </span>
         <span
           style={{
             display: "inline-flex",
