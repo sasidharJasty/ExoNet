@@ -862,41 +862,7 @@ export default function StarDetails({ stars = [] }) {
               </table>
             </div>
           )}
-          {habitabilityImageCandidates.length > 0 && (
-            <div
-              style={{
-                marginTop: "16px",
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(70,150,120,0.35)",
-                background: "rgba(12,22,18,0.65)",
-              }}
-            >
-              {!habitabilityImage.hidden && habitabilityImage.src ? (
-                <img
-                  src={habitabilityImage.src}
-                  alt={`Habitability SHAP explanation for ${habitabilityPayload?.id || starIdentifier}`}
-                  style={{ width: "100%", display: "block" }}
-                  onError={habitabilityImage.handleError}
-                />
-              ) : (
-                <div
-                  style={{
-                    padding: "16px",
-                    color: "#9db5ff",
-                    fontSize: "13px",
-                    textAlign: "center",
-                  }}
-                >
-                  We couldn't load a habitability SHAP plot for this star yet. Try running a fresh habitability
-                  analysis above.
-                </div>
-              )}
-              <p style={{ padding: "12px", margin: 0, color: "#86efac", fontSize: "12px" }}>
-                Habitability explainability plot generated for this request (if available).
-              </p>
-            </div>
-          )}
+          
         </section>
 
         <section style={{ marginBottom: "24px" }}>
