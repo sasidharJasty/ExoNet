@@ -504,7 +504,9 @@ export default function StarDetails({ stars = [] }) {
 
   const classificationImageCandidates = useMemo(
     () =>
-      buildImageCandidateUrls(classification?.shap_image, starIdentifier, {
+      // Always prefer the bundled snapshot explanation image for the quick "snap" view.
+      // This uses the file placed in the frontend public root: /shap_summary_class1.png
+      buildImageCandidateUrls('/shap_summary_class1.png', starIdentifier, {
         directory: "/static",
         suffix: ".png",
       }),
@@ -806,10 +808,14 @@ export default function StarDetails({ stars = [] }) {
                 }}
               >
                 <span style={{ color: "#d1fae5", fontSize: "14px" }}>
-                  Label: <strong>{habitability.label}</strong>
+                  Label: <strong>{habitability.label ?? "—"}</strong>
                 </span>
                 <span style={{ color: "#bef264", fontSize: "14px" }}>
-                  Score: <strong>{(habitability.score * 100).toFixed(2)}%</strong>
+                  Score: <strong>{
+                    typeof habitability?.score === "number" && Number.isFinite(habitability.score)
+                      ? `${(habitability.score * 100).toFixed(2)}%`
+                      : "—"
+                  }</strong>
                 </span>
               </div>
             )}
