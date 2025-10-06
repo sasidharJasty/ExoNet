@@ -1,4 +1,4 @@
-export const BASE_URL = "https://exonet-371390883017.europe-west1.run.app/";
+export const BASE_URL = "http://18.216.215.3:8000/";
 
 export async function fetchStars() {
   try {
