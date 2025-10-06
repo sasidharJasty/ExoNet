@@ -76,7 +76,10 @@ const buildImageCandidateUrls = (explicitPath, identifier, { directory = "/stati
 
   const pushUrl = (path) => {
     if (!path) return;
-    const fullPath = path.startsWith("http")
+    // If the path is an absolute frontend-root path (starts with '/'), use it
+    // as-is so images served from the frontend `public/` folder (like
+    // `/shap_summary_class1.png`) are requested from the client origin.
+    const fullPath = path.startsWith("http") || path.startsWith("/")
       ? path
       : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
     if (!seen.has(fullPath)) {
@@ -515,7 +518,8 @@ export default function StarDetails({ stars = [] }) {
 
   const habitabilityImageCandidates = useMemo(
     () =>
-      buildImageCandidateUrls(habitability?.shap_image, habitabilityPayload?.id, {
+      // Prefer the same bundled snapshot for habitability explanations as well.
+      buildImageCandidateUrls('/shap_summary_class1.png', habitabilityPayload?.id, {
         directory: "/static/habitability",
         suffix: "_habitability.png",
       }),

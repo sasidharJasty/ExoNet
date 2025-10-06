@@ -195,6 +195,9 @@ export default function Navbar() {
             <p style={{ marginTop: 8, color: "#cbd6ff" }}>
               To open a specific star's details, right-click (context menu) on the star in the main view and select "Open". This will open a full-page detail view including AI classification and explainability plots.
             </p>
+            <p style={{ marginTop: 8, color: "#cbd6ff" }}>
+              Controls in the 3D view: left-click and drag to rotate / move the camera, right-click and drag to pan the scene, and use the mouse wheel or pinch gesture to zoom in and out.
+            </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <input
