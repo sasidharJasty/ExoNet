@@ -59,8 +59,6 @@ Each image represents a distinct interpretability perspective:
 | **Heatmap (Top 30 Class 1)** | `shap_heatmap_top30_class1.png` | High-impact feature subset for class 1 predictions. |
 | **Summary Plot (Class 0)** | `shap_summary_class0.png` | Aggregated SHAP value distribution for non-planet outcomes. |
 | **Summary Plot (Class 1)** | `shap_summary_class1.png` | Aggregated SHAP distribution for planet-candidate predictions. |
-| **Waterfall Plot (Sample 0 Class 0)** | `shap_waterfall_sample0_class0.png` | Step-wise feature contributions for a single class 0 prediction. |
-| **Waterfall Plot (Sample 0 Class 1)** | `shap_waterfall_sample0_class1.png` | Step-wise contributions for a single class 1 prediction. |
 
 ### 🖼️ Example Outputs
 
@@ -73,8 +71,6 @@ Each image represents a distinct interpretability perspective:
 <img src="backend/Model/shap_heatmap_top30_class1.png" width="420"><br>
 <img src="backend/Model/shap_summary_class0.png" width="420">
 <img src="backend/Model/shap_summary_class1.png" width="420"><br>
-<img src="backend/Model/shap_waterfall_sample0_class0.png" width="420">
-<img src="backend/Model/shap_waterfall_sample0_class1.png" width="420">
 </div>
 
 Each plot provides complementary interpretability:
