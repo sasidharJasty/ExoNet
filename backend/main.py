@@ -200,12 +200,19 @@ def replace_zeros_with_random(df, exclude_cols=None):
     return df
 
 # Load & unify
-koi_unified = unify_koi(pd.read_csv(koi_path, low_memory=False))
-ps_unified = unify_pscomp(pd.read_csv(ps_path, low_memory=False))
-toi_unified = unify_toi(pd.read_csv(toi_path, low_memory=False))
-combined = pd.concat([koi_unified, ps_unified, toi_unified], ignore_index=True, sort=False)
-replace_zeros_with_random(combined, exclude_cols={"ra", "dec", "disposition"})
-combined.to_csv(DATA_DIR / "combined_catalog.csv", index=False)
+# Prefer a pre-built combined catalog if present. This makes container
+# initialization faster and avoids reading multiple large CSVs during startup.
+combined_path = DATA_DIR / "combined_catalog.csv"
+if combined_path.exists():
+    combined = pd.read_csv(combined_path, low_memory=False).fillna(0)
+else:
+    koi_unified = unify_koi(pd.read_csv(koi_path, low_memory=False))
+    ps_unified = unify_pscomp(pd.read_csv(ps_path, low_memory=False))
+    toi_unified = unify_toi(pd.read_csv(toi_path, low_memory=False))
+    combined = pd.concat([koi_unified, ps_unified, toi_unified], ignore_index=True, sort=False)
+    replace_zeros_with_random(combined, exclude_cols={"ra", "dec", "disposition"})
+    # Persist for future runs
+    combined.to_csv(combined_path, index=False)
 
 stars = combined.to_dict(orient="records")  # JSON-serializable
 
