@@ -1,4 +1,4 @@
-export const BASE_URL = "http://18.216.215.3";
+export const BASE_URL = "https://18.216.215.3";
 
 export async function fetchStars() {
   try {
