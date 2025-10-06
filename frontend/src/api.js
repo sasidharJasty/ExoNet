@@ -1,4 +1,4 @@
-export const BASE_URL = "http://18.216.215.3:8000"; //replace with your domain or local ip address of backend server
+export const BASE_URL = "https://18.216.215.3"; //replace with your domain or local ip address of backend server
 
 
 export async function fetchStars() {
