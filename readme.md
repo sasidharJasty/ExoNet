@@ -65,16 +65,16 @@ Each image represents a distinct interpretability perspective:
 ### 🖼️ Example Outputs
 
 <div align="center">
-<img src="backend/Model/static/shap/shap_bar_class1.png" width="420">
-<img src="backend/Model/static/shap/shap_barplot_class0.png" width="420"><br>
-<img src="backend/Model/static/shap/shap_dependence_feature0.png" width="420">
-<img src="backend/Model/static/shap/shap_dependence_snr_class1.png" width="420"><br>
-<img src="backend/Model/static/shap/shap_heatmap_class0.png" width="420">
-<img src="backend/Model/static/shap/shap_heatmap_top30_class1.png" width="420"><br>
-<img src="backend/Model/static/shap/shap_summary_class0.png" width="420">
-<img src="backend/Model/static/shap/shap_summary_class1.png" width="420"><br>
-<img src="backend/Model/static/shap/shap_waterfall_sample0_class0.png" width="420">
-<img src="backend/Model/static/shap/shap_waterfall_sample0_class1.png" width="420">
+<img src="backend/Model/shap_bar_class1.png" width="420">
+<img src="backend/Model/shap_barplot_class0.png" width="420"><br>
+<img src="backend/Model/shap_dependence_feature0.png" width="420">
+<img src="backend/Model/shap_dependence_snr_class1.png" width="420"><br>
+<img src="backend/Model/shap_heatmap_class0.png" width="420">
+<img src="backend/Model/shap_heatmap_top30_class1.png" width="420"><br>
+<img src="backend/Model/shap_summary_class0.png" width="420">
+<img src="backend/Model/shap_summary_class1.png" width="420"><br>
+<img src="backend/Model/shap_waterfall_sample0_class0.png" width="420">
+<img src="backend/Model/shap_waterfall_sample0_class1.png" width="420">
 </div>
 
 Each plot provides complementary interpretability:
