@@ -70,6 +70,108 @@ const toSafeKey = (value) => {
   return String(value).replace(/[^a-z0-9-_]/gi, "_");
 };
 
+const buildImageCandidateUrls = (explicitPath, identifier, { directory = "/static", suffix = ".png" } = {}) => {
+  const urls = [];
+  const seen = new Set();
+
+  const pushUrl = (path) => {
+    if (!path) return;
+    const fullPath = path.startsWith("http")
+      ? path
+      : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+    if (!seen.has(fullPath)) {
+      seen.add(fullPath);
+      urls.push(fullPath);
+    }
+  };
+
+  if (explicitPath) {
+    pushUrl(explicitPath);
+  }
+
+  const rawId = identifier == null ? "" : String(identifier).trim();
+  if (!rawId) {
+    return urls;
+  }
+
+  const nameVariants = [];
+  nameVariants.push(rawId);
+
+  const safe = toSafeKey(rawId);
+  if (safe && !nameVariants.includes(safe)) {
+    nameVariants.push(safe);
+  }
+
+  const spaceUnderscore = rawId.replace(/\s+/g, "_");
+  if (spaceUnderscore && !nameVariants.includes(spaceUnderscore)) {
+    nameVariants.push(spaceUnderscore);
+  }
+
+  const spaceHyphen = rawId.replace(/\s+/g, "-");
+  if (spaceHyphen && !nameVariants.includes(spaceHyphen)) {
+    nameVariants.push(spaceHyphen);
+  }
+
+  const dotUnderscore = rawId.replace(/\./g, "_");
+  if (dotUnderscore && !nameVariants.includes(dotUnderscore)) {
+    nameVariants.push(dotUnderscore);
+  }
+
+  const slashUnderscore = rawId.replace(/[\\/]+/g, "_");
+  if (slashUnderscore && !nameVariants.includes(slashUnderscore)) {
+    nameVariants.push(slashUnderscore);
+  }
+
+  const lower = rawId.toLowerCase();
+  if (lower && !nameVariants.includes(lower)) {
+    nameVariants.push(lower);
+  }
+
+  const upper = rawId.toUpperCase();
+  if (upper && !nameVariants.includes(upper)) {
+    nameVariants.push(upper);
+  }
+
+  nameVariants.forEach((variant) => {
+    const trimmed = String(variant).trim();
+    if (!trimmed) return;
+    const encoded = encodeURIComponent(trimmed);
+    pushUrl(`${directory}/${encoded}${suffix}`);
+  });
+
+  return urls;
+};
+
+const useImageFallback = (candidates) => {
+  const [index, setIndex] = useState(0);
+  const [hidden, setHidden] = useState(false);
+  const key = candidates.join("|");
+
+  useEffect(() => {
+    setIndex(0);
+    setHidden(false);
+  }, [key]);
+
+  const src = candidates[index] ?? null;
+
+  const handleError = () => {
+    setIndex((prev) => {
+      const next = prev + 1;
+      if (next < candidates.length) {
+        return next;
+      }
+      setHidden(true);
+      return prev;
+    });
+  };
+
+  return {
+    src,
+    hidden: hidden || candidates.length === 0,
+    handleError,
+  };
+};
+
 const matchesStarId = (star, id) => {
   if (!star || !id) return false;
   const candidates = [
@@ -400,25 +502,26 @@ export default function StarDetails({ stars = [] }) {
     return String(value);
   };
 
-  const classificationShapImageUrl = useMemo(() => {
-    if (classification?.shap_image) {
-      const path = classification.shap_image;
-      return path.startsWith("http") ? path : `${BASE_URL}${path}`;
-    }
-    if (!starIdentifier) return null;
-    const encoded = encodeURIComponent(String(starIdentifier));
-    return `${BASE_URL}/shap/${encoded}.png`;
-  }, [classification, starIdentifier]);
+  const classificationImageCandidates = useMemo(
+    () =>
+      buildImageCandidateUrls(classification?.shap_image, starIdentifier, {
+        directory: "/static",
+        suffix: ".png",
+      }),
+    [classification?.shap_image, starIdentifier]
+  );
 
-  const habitabilityShapImageUrl = useMemo(() => {
-    if (habitability?.shap_image) {
-      const path = habitability.shap_image;
-      return path.startsWith("http") ? path : `${BASE_URL}${path}`;
-    }
-    if (!habitabilityPayload?.id) return null;
-    const safeId = toSafeKey(habitabilityPayload.id);
-    return `${BASE_URL}/shap/habitability/${safeId}_habitability.png`;
-  }, [habitability, habitabilityPayload]);
+  const habitabilityImageCandidates = useMemo(
+    () =>
+      buildImageCandidateUrls(habitability?.shap_image, habitabilityPayload?.id, {
+        directory: "/static/habitability",
+        suffix: "_habitability.png",
+      }),
+    [habitability?.shap_image, habitabilityPayload?.id]
+  );
+
+  const classificationImage = useImageFallback(classificationImageCandidates);
+  const habitabilityImage = useImageFallback(habitabilityImageCandidates);
 
   const habitabilityFeatureRows = useMemo(() => {
     if (!habitability?.engineered_features) return [];
@@ -759,7 +862,7 @@ export default function StarDetails({ stars = [] }) {
               </table>
             </div>
           )}
-          {habitabilityShapImageUrl && (
+          {habitabilityImageCandidates.length > 0 && (
             <div
               style={{
                 marginTop: "16px",
@@ -769,14 +872,26 @@ export default function StarDetails({ stars = [] }) {
                 background: "rgba(12,22,18,0.65)",
               }}
             >
-              <img
-                src={habitabilityShapImageUrl}
-                alt={`Habitability SHAP explanation for ${starIdentifier}`}
-                style={{ width: "100%", display: "block" }}
-                onError={(event) => {
-                  event.currentTarget.style.display = "none";
-                }}
-              />
+              {!habitabilityImage.hidden && habitabilityImage.src ? (
+                <img
+                  src={habitabilityImage.src}
+                  alt={`Habitability SHAP explanation for ${habitabilityPayload?.id || starIdentifier}`}
+                  style={{ width: "100%", display: "block" }}
+                  onError={habitabilityImage.handleError}
+                />
+              ) : (
+                <div
+                  style={{
+                    padding: "16px",
+                    color: "#9db5ff",
+                    fontSize: "13px",
+                    textAlign: "center",
+                  }}
+                >
+                  We couldn't load a habitability SHAP plot for this star yet. Try running a fresh habitability
+                  analysis above.
+                </div>
+              )}
               <p style={{ padding: "12px", margin: 0, color: "#86efac", fontSize: "12px" }}>
                 Habitability explainability plot generated for this request (if available).
               </p>
@@ -870,7 +985,7 @@ export default function StarDetails({ stars = [] }) {
           </div>
         </section>
 
-        {classificationShapImageUrl && (
+        {classificationImageCandidates.length > 0 && (
           <section style={{ marginTop: "24px" }}>
             <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>Classification SHAP Explanation</h2>
             <div
@@ -881,14 +996,26 @@ export default function StarDetails({ stars = [] }) {
                 background: "rgba(12,16,34,0.75)",
               }}
             >
-              <img
-                src={classificationShapImageUrl}
-                alt={`SHAP explanation for ${star.target_id || star.id}`}
-                style={{ width: "100%", display: "block" }}
-                onError={(event) => {
-                  event.currentTarget.style.display = "none";
-                }}
-              />
+              {!classificationImage.hidden && classificationImage.src ? (
+                <img
+                  src={classificationImage.src}
+                  alt={`SHAP explanation for ${star.target_id || star.id || starIdentifier}`}
+                  style={{ width: "100%", display: "block" }}
+                  onError={classificationImage.handleError}
+                />
+              ) : (
+                <div
+                  style={{
+                    padding: "16px",
+                    color: "#9db5ff",
+                    fontSize: "13px",
+                    textAlign: "center",
+                  }}
+                >
+                  We couldn't load a classification SHAP image yet. Run the classification above to generate a new
+                  explanation.
+                </div>
+              )}
               <p style={{ padding: "12px", margin: 0, color: "#9db5ff", fontSize: "12px" }}>
                 Generated explainability plot for classification model (if available).
               </p>
