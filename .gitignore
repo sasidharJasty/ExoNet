@@ -1,0 +1,11 @@
+# Ignore virtual environments
+env/
+venv/
+*.pyc
+__pycache__/
+
+# Ignore data files
+*.csv
+*.tsv
+*.zip
+*.tar.gz
