@@ -1,4 +1,4 @@
-export const BASE_URL = "https://www.exonet.codes/"; // replace with your domain or local ip address of backend server
+export const BASE_URL = "https://www.exonet.codes"; // replace with your domain or local ip address of backend server
 
 // If true, when backend requests fail or return empty results, fall back to the
 // bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
