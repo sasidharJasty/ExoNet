@@ -2,17 +2,90 @@ export const BASE_URL = "https://18.216.215.3"; //replace with your domain or lo
 
 
 export async function fetchStars() {
+  // Try backend first. If it fails or returns no rows, fall back to the bundled
+  // CSV at /combined_catalog.csv (served from the frontend public folder).
   try {
     const res = await fetch(`${BASE_URL}/stars`);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Failed to fetch stars: ${res.status} ${text}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+      console.warn("fetchStars: backend returned no data, falling back to local CSV");
+    } else {
+      const text = await res.text().catch(() => "");
+      console.warn(`fetchStars: backend returned ${res.status} ${text}, falling back to local CSV`);
     }
-    return await res.json();
   } catch (err) {
-    console.error("fetchStars error:", err);
+    console.warn("fetchStars backend error, falling back to local CSV:", err);
+  }
+
+  // Fallback: load combined_catalog.csv from public/ and parse it.
+  try {
+    const csvRes = await fetch("/combined_catalog.csv");
+    if (!csvRes.ok) {
+      const txt = await csvRes.text().catch(() => "");
+      throw new Error(`Failed to load local combined_catalog.csv: ${csvRes.status} ${txt}`);
+    }
+    const text = await csvRes.text();
+    const rows = parseCsv(text);
+    return rows;
+  } catch (err) {
+    console.error("fetchStars fallback CSV error:", err);
+    // Re-throw so callers know nothing could be loaded
     throw err;
   }
+}
+
+// Minimal CSV parser that handles quoted fields and returns array of objects.
+function parseCsv(text) {
+  if (!text) return [];
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
+  if (lines.length === 0) return [];
+  const headers = splitCsvLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i += 1) {
+    const parts = splitCsvLine(lines[i]);
+    if (parts.length === 0) continue;
+    const obj = {};
+    for (let j = 0; j < headers.length; j += 1) {
+      const key = headers[j] ?? `col${j}`;
+      let val = parts[j] ?? "";
+      // Try to coerce numeric-looking values to numbers
+      const num = Number(val);
+      if (val !== "" && !Number.isNaN(num)) {
+        val = num;
+      }
+      obj[key] = val;
+    }
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function splitCsvLine(line) {
+  const result = [];
+  let cur = "";
+  let inQuote = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i + 1] === '"') {
+        // escaped quote
+        cur += '"';
+        i += 1;
+      } else {
+        inQuote = !inQuote;
+      }
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result.map((s) => s.trim());
 }
 
 export async function fetchStarById(starId) {
