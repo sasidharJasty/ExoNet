@@ -20,6 +20,8 @@ export default function Starfield({ stars = [] }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [colorMode, setColorMode] = useState("mission");
   const [selectedFeature, setSelectedFeature] = useState("stellar_teff_k");
+  const [featureFilter, setFeatureFilter] = useState("");
+  const [controlsOpen, setControlsOpen] = useState(true);
   const [activeMissions, setActiveMissions] = useState(["KEPLER", "K2", "TESS", "0"]);
   const [featureRange, setFeatureRange] = useState({ min: 0, max: 1 });
   const [filterRange, setFilterRange] = useState({ min: 0, max: 1 });
@@ -241,121 +243,97 @@ export default function Starfield({ stars = [] }) {
         </div>
       )}
 
-      <div
+      {/* Floating gear button to open controls popup */}
+      <button
+        type="button"
+        onClick={() => setControlsOpen((s) => !s)}
+        aria-label="Open display controls"
         style={{
           position: "absolute",
-          top: 50,
-          left: 10,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          color: "white",
-          padding: "10px",
-          borderRadius: "4px",
-          maxWidth: "220px",
+          left: 16,
+          bottom: 18,
+          zIndex: 9998,
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          border: "none",
+          background: "rgba(11,13,23,0.9)",
+          color: "#fff",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          cursor: "pointer",
         }}
       >
-        <div>
-          Color mode:
-          <select value={colorMode} onChange={(e) => setColorMode(e.target.value)}>
-            <option value="mission">Mission</option>
-            <option value="feature">Feature</option>
-          </select>
-        </div>
+        ⚙️
+      </button>
 
-        {colorMode === "feature" && stars[0] && (
-          <>
-            <div style={{ marginTop: "8px" }}>
-              Feature:
-              <select
-                value={selectedFeature}
-                onChange={(e) => setSelectedFeature(e.target.value)}
-              >
-                {Object.keys(stars[0])
-                  .filter((key) => typeof stars[0][key] === "number")
-                  .map((key) => (
-                    <option key={key} value={key}>
-                      {key}
-                    </option>
-                  ))}
-              </select>
+      {/* Controls popup/modal */}
+      {controlsOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "absolute",
+            left: 18,
+            top: 60,
+            zIndex: 9999,
+            width: 320,
+            background: "linear-gradient(180deg, rgba(6,10,20,0.98), rgba(8,12,24,0.96))",
+            color: "#fff",
+            padding: 14,
+            borderRadius: 12,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <strong style={{ fontSize: 16 }}>Display Controls</strong>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button onClick={() => { setColorMode('mission'); }} style={{ padding: 6, borderRadius: 8, background: colorMode === 'mission' ? '#25406a' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>Mission</button>
+              <button onClick={() => { setColorMode('feature'); }} style={{ padding: 6, borderRadius: 8, background: colorMode === 'feature' ? '#25406a' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>Feature</button>
+              <button onClick={() => setControlsOpen(false)} aria-label="Close" style={{ background: 'transparent', border: 'none', color: '#cbd6ff', cursor: 'pointer' }}>✕</button>
             </div>
-            <div style={{ marginTop: "8px" }}>
-              <input
-                type="range"
-                min={featureRange.min}
-                max={featureRange.max}
-                step={(featureRange.max - featureRange.min) / 100 || 0.01}
-                value={filterRange.min}
-                onChange={(e) =>
-                  setFilterRange((current) => ({
-                    ...current,
-                    min: parseFloat(e.target.value),
-                  }))
-                }
-              />
-              <input
-                type="range"
-                min={featureRange.min}
-                max={featureRange.max}
-                step={(featureRange.max - featureRange.min) / 100 || 0.01}
-                value={filterRange.max}
-                onChange={(e) =>
-                  setFilterRange((current) => ({
-                    ...current,
-                    max: parseFloat(e.target.value),
-                  }))
-                }
-              />
-              <div style={{ fontSize: "12px" }}>
-                Showing {filterRange.min.toFixed(2)} → {filterRange.max.toFixed(2)}
-              </div>
-              <div
-                style={{
-                  width: "100%",
-                  height: "10px",
-                  marginTop: "4px",
-                  background:
-                    "linear-gradient(to right, hsl(240,100%,50%), hsl(0,100%,50%))",
-                }}
-              />
-            </div>
-          </>
-        )}
-
-        {colorMode === "mission" && (
-          <div style={{ marginTop: "8px" }}>
-            {Object.entries(missionLegend).map(([mission, color]) => (
-              <div
-                key={mission}
-                onClick={() =>
-                  setActiveMissions((prev) =>
-                    prev.includes(mission)
-                      ? prev.filter((m) => m !== mission)
-                      : [...prev, mission]
-                  )
-                }
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  fontSize: "12px",
-                  marginBottom: "4px",
-                  cursor: "pointer",
-                  opacity: activeMissions.includes(mission) ? 1 : 0.4,
-                }}
-              >
-                <div
-                  style={{
-                    width: "12px",
-                    height: "12px",
-                    backgroundColor: color,
-                    marginRight: "6px",
-                  }}
-                />
-                {mission}
-              </div>
-            ))}
           </div>
-        )}
-      </div>
+
+          <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+            {colorMode === 'feature' && stars[0] && (
+              <div>
+                <div style={{ fontSize: 12, marginBottom: 8 }}>Feature (search and click)</div>
+                <input
+                  type="text"
+                  placeholder="Filter features..."
+                  value={featureFilter}
+                  onChange={(e) => setFeatureFilter(e.target.value)}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', color: '#fff', marginBottom: 10 }}
+                />
+                <div style={{ maxHeight: 180, overflowY: 'auto', borderRadius: 8, border: '1px solid rgba(255,255,255,0.03)', marginBottom: 10 }}>
+                  {Object.keys(stars[0]).filter((key) => typeof stars[0][key] === 'number').filter((key) => key.toLowerCase().includes(featureFilter.toLowerCase())).map((key) => (
+                    <div key={key} onClick={() => { setSelectedFeature(key); setFeatureFilter(''); }} style={{ padding: '8px 10px', cursor: 'pointer', background: key === selectedFeature ? 'rgba(255,255,255,0.06)' : 'transparent', color: key === selectedFeature ? '#fff' : '#dfeaff' }}>{key}</div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 12, marginBottom: 6 }}>Range</div>
+                <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.min} onChange={(e) => setFilterRange((c) => ({ ...c, min: parseFloat(e.target.value) }))} />
+                <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.max} onChange={(e) => setFilterRange((c) => ({ ...c, max: parseFloat(e.target.value) }))} />
+                <div style={{ fontSize: 12, marginTop: 6 }}>Showing {filterRange.min.toFixed(2)} → {filterRange.max.toFixed(2)}</div>
+              </div>
+            )}
+
+            {colorMode === 'mission' && (
+              <div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <button onClick={() => setActiveMissions(Object.keys(missionLegend))} style={{ padding: '8px 10px', borderRadius: 8, background: '#25406a', color: '#fff', border: 'none', cursor: 'pointer' }}>Select all</button>
+                  <button onClick={() => setActiveMissions([])} style={{ padding: '8px 10px', borderRadius: 8, background: '#22283a', color: '#fff', border: 'none', cursor: 'pointer' }}>Clear</button>
+                </div>
+                {Object.entries(missionLegend).map(([mission, color]) => (
+                  <div key={mission} onClick={() => setActiveMissions((prev) => prev.includes(mission) ? prev.filter((m) => m !== mission) : [...prev, mission])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: activeMissions.includes(mission) ? 'rgba(255,255,255,0.03)' : 'transparent', marginBottom: 8 }}>
+                    <div style={{ width: 18, height: 18, backgroundColor: color, borderRadius: 4, boxShadow: `0 6px 18px ${color}` }} />
+                    <div style={{ flex: 1 }}>{mission}</div>
+                    <div style={{ width: 18, height: 18, borderRadius: 4, background: activeMissions.includes(mission) ? '#8ef7b6' : 'transparent', border: activeMissions.includes(mission) ? '1px solid rgba(0,0,0,0.2)' : '1px solid rgba(255,255,255,0.06)' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
