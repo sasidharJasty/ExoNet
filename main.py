@@ -13,7 +13,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
+import matplotlib as mpl
 import xgboost as xgb
 
 # ------------------------------
@@ -31,6 +31,23 @@ HAB_SCALER_PATH = DATA_DIR / "scaler_robust.joblib"
 
 TARGET_LABELS = {0: "Non-Habitable", 1: "Potentially Habitable"}
 
+# Names used by the tabular classifier. Keep in sync with frontend CLASSIFIER_FEATURES.
+CLASSIFIER_FEATURE_NAMES = [
+    "period_days",
+    "transit_duration_hours",
+    "depth_ppm",
+    "planet_radius_re",
+    "stellar_radius_rs",
+    "stellar_teff_k",
+    "stellar_logg",
+    "snr",
+    "ra",
+    "dec",
+    "mission_code",
+    "disposition_code",
+    "source_code",
+]
+
 # ------------------------------
 # FastAPI app
 # ------------------------------
@@ -47,7 +64,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/shap", StaticFiles(directory=STATIC_DIR), name="shap")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # ------------------------------
 # Download CSV helper
@@ -253,19 +270,64 @@ class HabitabilityInput(BaseModel):
 # ------------------------------
 def generate_shap_image(features: List[float], star_id: str, plot_type="summary"):
     X = np.array(features).reshape(1, -1)
-    shap_path = STATIC_DIR / f"{star_id}.png"
+    safe_id = _safe_star_key(star_id)
+    shap_path = STATIC_DIR / f"{safe_id}.png"
     try:
-        shap_values = explainer.shap_values(X)
-        plt.figure(figsize=(6,4))
-        shap.summary_plot(shap_values, X, show=False)
+        # Prefer the Explanation API which is more consistent across model types
+        # Provide a DataFrame with feature names so SHAP plots use labels instead of numeric indices.
+        n_features = X.shape[1]
+        if n_features == len(CLASSIFIER_FEATURE_NAMES):
+            df = pd.DataFrame(X, columns=CLASSIFIER_FEATURE_NAMES)
+        else:
+            # If lengths mismatch, attempt to reuse known names and append generic names for extras
+            cols = CLASSIFIER_FEATURE_NAMES[:n_features] if n_features <= len(CLASSIFIER_FEATURE_NAMES) else (
+                CLASSIFIER_FEATURE_NAMES + [f"f{i}" for i in range(n_features - len(CLASSIFIER_FEATURE_NAMES))]
+            )
+            df = pd.DataFrame(X, columns=cols)
+
+        explanation = explainer(df)
+
+        # Use a consistent, high-contrast diverging colormap for SHAP
+        # Do NOT override the axes.prop_cycle (SHAP relies on default cycles); only set the colormap and background
+        with mpl.rc_context({
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "image.cmap": "RdBu",
+        }):
+            plt.figure(figsize=(8, 4))
+
+            # If the explainer returns multi-output (e.g. multiclass), select the predicted class
+            try:
+                vals = getattr(explanation, "values", None)
+                if vals is not None and getattr(vals, "ndim", 1) == 3:
+                    # shape (n_samples, n_outputs, n_features)
+                    pred_class = int(CLASSIFIER_MODEL.predict(X)[0]) if CLASSIFIER_MODEL is not None else 0
+                    sel = explanation[0][pred_class]
+                else:
+                    sel = explanation[0]
+            except Exception:
+                sel = explanation[0]
+
+            # For a single-sample explanation prefer a waterfall plot (clear contribution per feature)
+            try:
+                # Waterfall uses diverging colors to show positive/negative contributions
+                shap.plots.waterfall(sel, show=False)
+            except Exception:
+                # Fall back to a horizontal bar importance plot when waterfall isn't available
+                try:
+                    shap.summary_plot(explanation, X, show=False, plot_type="bar", max_display=20, cmap="RdBu")
+                except Exception:
+                    shap.summary_plot(explanation, X, show=False, cmap="RdBu")
+
+            plt.savefig(shap_path, bbox_inches="tight")
+            plt.close()
+    except Exception as e:
+        plt.figure(figsize=(6, 2))
+        plt.text(0.5, 0.5, f"SHAP failed\n{e}", ha="center", va="center")
+        plt.axis("off")
         plt.savefig(shap_path, bbox_inches="tight")
         plt.close()
-    except Exception as e:
-        plt.figure()
-        plt.text(0.5,0.5,f"SHAP failed\n{e}", ha="center", va="center")
-        plt.savefig(shap_path)
-        plt.close()
-    return f"/shap/{star_id}.png"
+    return f"/static/{safe_id}.png"
 
 
 def _safe_star_key(value: str) -> str:
@@ -380,23 +442,37 @@ def generate_habitability_shap_image(X_scaled_df: pd.DataFrame, star_id: str):
     filename = f"{_safe_star_key(star_id)}_habitability.png"
     shap_path = HAB_STATIC_DIR / filename
     try:
+        # Build an Explanation and prefer a bar-summary for the engineered feature importances
         if habitability_explainer is not None:
-            shap_values = habitability_explainer(X_scaled_df)
+            explanation = habitability_explainer(X_scaled_df)
         elif habitability_model is not None:
-            shap_values = shap.Explainer(habitability_model, X_scaled_df)(X_scaled_df)
+            explanation = shap.Explainer(habitability_model, X_scaled_df)(X_scaled_df)
         else:
             raise RuntimeError("Habitability model unavailable")
-        plt.figure(figsize=(8, 5))
-        shap.summary_plot(shap_values, X_scaled_df, show=False)
-        plt.title("Habitability Feature Importance")
-        plt.savefig(shap_path, bbox_inches="tight")
-        plt.close()
+
+        # Use consistent colors for habitability plots as well
+        with mpl.rc_context({
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "image.cmap": "RdBu",
+        }):
+            plt.figure(figsize=(10, 5))
+            try:
+                # Bar plot of mean absolute SHAP values (best for showing feature importance)
+                shap.summary_plot(explanation, X_scaled_df, show=False, plot_type="bar", max_display=25, cmap="RdBu")
+            except Exception:
+                # Fallback to the standard summary plot
+                shap.summary_plot(explanation, X_scaled_df, show=False, cmap="RdBu")
+            plt.title("Habitability Feature Importance")
+            plt.savefig(shap_path, bbox_inches="tight")
+            plt.close()
     except Exception as exc:
-        plt.figure()
+        plt.figure(figsize=(6, 2))
         plt.text(0.5, 0.5, f"SHAP failed\n{exc}", ha="center", va="center")
+        plt.axis("off")
         plt.savefig(shap_path, bbox_inches="tight")
         plt.close()
-    return f"/shap/habitability/{filename}"
+    return f"/static/habitability/{filename}"
 
 # ------------------------------
 # Routes
