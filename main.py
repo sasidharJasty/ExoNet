@@ -87,18 +87,18 @@ koi_path = DATA_DIR / "kepler_koi.csv"
 ps_path = DATA_DIR / "pscomppars.csv"
 toi_path = DATA_DIR / "tess_toi.csv"
 
-download_csv(
-    "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+kepler.koi+&format=csv",
-    koi_path
-)
-download_csv(
-    "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+pscomppars&format=csv",
-    ps_path
-)
-download_csv(
-    "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+tmstoi&format=csv",
-    toi_path
-)
+# `download_csv(
+#     "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+kepler.koi+&format=csv",
+#     koi_path
+# )
+# download_csv(
+#     "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+pscomppars&format=csv",
+#    ps_path
+#)
+#download_csv(
+#    "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+tmstoi&format=csv",
+#    toi_path
+#)
 
 # ------------------------------
 # Unify functions
