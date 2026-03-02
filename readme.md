@@ -1,6 +1,5 @@
-<div align="center">
 
-# 🌌 Exoplanet Starfield Explorer
+# Exoplanet Starfield Explorer
 
 An integrated **React + Three.js** front end coupled with a **FastAPI** backend for **real-time exploration, classification, and explainability** of exoplanet candidates.
 
@@ -8,13 +7,9 @@ An integrated **React + Three.js** front end coupled with a **FastAPI** backend 
 
 ExoNet transforms NASA’s open exoplanet archives into interactive, explainable, and data-driven visual experiences. Our mission is to **accelerate automated planet detection while promoting scientific transparency and curiosity about distant worlds.**
 
-> 💡 **Collaborate with us!** We welcome contributors in ML/AI, data engineering, web visualization, and science communication. If you’re passionate about translating cosmic data into human understanding, this project is for you.
-
-</div>
-
 ---
 
-## 🚀 Motivation
+## Motivation
 
 NASA’s missions (Kepler, K2, TESS, and beyond) have produced vast catalogs of potential exoplanets — many identified manually.  
 **ExoNet** addresses this challenge by automating classification and habitability inference through machine learning, while providing **explainable AI (XAI)** insights via **SHAP (SHapley Additive exPlanations)**.  
@@ -23,7 +18,7 @@ This repository unifies **data ingestion**, **AI inference**, **SHAP visualizati
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 - **Interactive 3D Starfield** — Navigate Kepler/TESS regions in 3D space using Three.js.
 - **Integrated Explainability** — Every model prediction is accompanied by multiple SHAP visualizations.
@@ -34,18 +29,18 @@ This repository unifies **data ingestion**, **AI inference**, **SHAP visualizati
 
 ---
 
-## 🧠 Explainable AI (SHAP Visual Suite)
+## Explainable AI (SHAP Visual Suite)
 
 SHAP (SHapley Additive exPlanations) quantifies how each feature contributes to the model’s output, enabling transparent, interpretable AI for astrophysical classification.
 
-### 🔍 Workflow
+### Workflow
 
 1. **Inference Request** — Frontend triggers `/classify` or `/habitability`.
 2. **Computation** — Backend computes SHAP values for all features.
 3. **Visualization** — Multiple SHAP plots are generated under  
    `backend/Model/static/shap/` and displayed inline in the UI.
 
-### 📊 SHAP Visual Outputs
+### SHAP Visual Outputs
 
 Each image represents a distinct interpretability perspective:
 
@@ -60,7 +55,7 @@ Each image represents a distinct interpretability perspective:
 | **Summary Plot (Class 0)** | `shap_summary_class0.png` | Aggregated SHAP value distribution for non-planet outcomes. |
 | **Summary Plot (Class 1)** | `shap_summary_class1.png` | Aggregated SHAP distribution for planet-candidate predictions. |
 
-### 🖼️ Example Outputs
+### Example Outputs
 
 <div align="center">
 <img src="backend/Model/shap_bar_class1.png" width="420">
@@ -83,15 +78,12 @@ Each plot provides complementary interpretability:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 **Requirements:**  
 Node.js ≥ 18, Python 3.11+, npm/pip installed (virtualenv available in `env/`).
 
-### 1️⃣ Backend (FastAPI)
+### Backend (FastAPI)
 ```bash
 cd backend
 ../env/bin/uvicorn backend.main:app --reload
-
-## 🗺️ Project Structure
-
