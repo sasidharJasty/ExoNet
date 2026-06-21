@@ -17,6 +17,13 @@ NASA’s missions (Kepler, K2, TESS, and beyond) have produced vast catalogs of 
 This repository unifies **data ingestion**, **AI inference**, **SHAP visualization**, and **interactive 3D exploration** into a single reproducible research environment.
 
 ---
+## How To Run
+
+- Install Node
+- Run `npm i`
+- Then run `npm run dev` to start frontend website
+- Go into backend and run `pip install -r requirements.txt`
+- Then run `python manage.py runserver`
 
 ## Key Features
 
