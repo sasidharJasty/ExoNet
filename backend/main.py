@@ -21,7 +21,16 @@ import xgboost as xgb
 # Paths & directories
 # ------------------------------
 ROOT = Path(__file__).parent
-DATA_DIR = ROOT / "Model"
+
+# Fallback check: handle whether files are in ./Model or ./backend/Model
+if (ROOT / "Model").exists():
+    DATA_DIR = ROOT / "Model"
+elif (ROOT / "backend" / "Model").exists():
+    DATA_DIR = ROOT / "backend" / "Model"
+else:
+    DATA_DIR = ROOT / "Model"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 STATIC_DIR = DATA_DIR / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = DATA_DIR / "xgb_tabular.joblib"
@@ -29,6 +38,12 @@ HAB_STATIC_DIR = STATIC_DIR / "habitability"
 HAB_STATIC_DIR.mkdir(parents=True, exist_ok=True)
 HAB_MODEL_PATH = DATA_DIR / "meta_logreg.joblib"
 HAB_SCALER_PATH = DATA_DIR / "scaler_robust.joblib"
+
+# Star catalogs
+koi_path = DATA_DIR / "kepler_koi.csv"
+ps_path = DATA_DIR / "pscomppars.csv"
+toi_path = DATA_DIR / "tess_toi.csv"
+combined_path = DATA_DIR / "combined_catalog.csv"
 
 TARGET_LABELS = {0: "Non-Habitable", 1: "Potentially Habitable"}
 
@@ -93,9 +108,7 @@ def download_csv(url, out_path):
 # ------------------------------
 # Star catalogs
 # ------------------------------
-koi_path = DATA_DIR / "kepler_koi.csv"
-ps_path = DATA_DIR / "pscomppars.csv"
-toi_path = DATA_DIR / "tess_toi.csv"
+
 
 # `download_csv(
 #     "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+kepler.koi+&format=csv",
