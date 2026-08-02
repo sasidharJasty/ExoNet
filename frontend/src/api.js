@@ -4,7 +4,7 @@ export const BASE_URL = "http://127.0.0.1:8000"; // replace with your domain or 
 // bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
 // rely on the backend.
 export const LOCAL_CATALOG_FALLBACK = true;
-export const LOCAL_CATALOG_PATH = "/combined_catalog.csv"; // Model was already ran on this file
+export const LOCAL_CATALOG_PATH = "./combined_catalog.csv"; // Model was already ran on this file
 
 let _localCatalogCache = null;
 
