@@ -67,6 +67,7 @@ const loadLocalCatalog = async () => {
   if (_localCatalogCache) return _localCatalogCache;
   try {
     const res = await fetch(LOCAL_CATALOG_PATH);
+    console.log("loading local catalog");
     if (!res.ok) throw new Error(`Failed to fetch local catalog: ${res.status}`);
     const text = await res.text();
     const rows = parseCSV(text);
