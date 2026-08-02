@@ -72,6 +72,8 @@ const loadLocalCatalog = async () => {
     const text = await res.text();
     const rows = parseCSV(text);
     _localCatalogCache = rows;
+    console.log("local catalog loaded", rows.length);
+    console.log(rows);
     return rows;
   } catch (err) {
     console.error("loadLocalCatalog error:", err);
