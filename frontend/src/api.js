@@ -81,19 +81,22 @@ const loadLocalCatalog = async () => {
 
 
 export async function fetchStars() {
+
   try {
-    const res = await fetch(`${BASE_URL}/stars`);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Failed to fetch stars: ${res.status} ${text}`);
-    }
-    return await res.json();
-  } catch (err) {
-    console.error("fetchStars error:", err);
     if (LOCAL_CATALOG_FALLBACK) {
       const local = await loadLocalCatalog();
       if (local && local.length > 0) return local;
+    } else {
+      const res = await fetch(`${BASE_URL}/stars`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to fetch stars: ${res.status} ${text}`);
+      }
+      return await res.json();
     }
+  } catch (err) {
+    console.error("fetchStars error:", err);
+
     throw err;
   }
 }
