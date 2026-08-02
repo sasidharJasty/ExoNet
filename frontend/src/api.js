@@ -1,5 +1,7 @@
 export const BASE_URL = "http://127.0.0.1:8000"; // replace with your domain or local ip address of backend server
 
+import catalogRaw from './combined_catalog.csv?raw';
+
 // If true, when backend requests fail or return empty results, fall back to the
 // bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
 // rely on the backend.
@@ -66,10 +68,8 @@ const parseCSV = (text) => {
 const loadLocalCatalog = async () => {
   if (_localCatalogCache) return _localCatalogCache;
   try {
-    const res = await fetch(LOCAL_CATALOG_PATH);
-    console.log("loading local catalog");
-    if (!res.ok) throw new Error(`Failed to fetch local catalog: ${res.status}`);
-    const text = await res.text();
+    console.log("loading local catalog from bundled asset");
+    const text = catalogRaw;
     const rows = parseCSV(text);
     _localCatalogCache = rows;
     console.log("local catalog loaded", rows.length);
