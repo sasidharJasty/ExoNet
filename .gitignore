@@ -5,7 +5,7 @@ venv/
 __pycache__/
 
 # Ignore data files
-*.csv
+
 *.tsv
 *.zip
 *.tar.gz
