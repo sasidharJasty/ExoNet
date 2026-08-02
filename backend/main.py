@@ -20,14 +20,27 @@ import xgboost as xgb
 # ------------------------------
 # Paths & directories
 # ------------------------------
+import os
+from pathlib import Path
+
 ROOT = Path(__file__).parent
 
-# Fallback check: handle whether files are in ./Model or ./backend/Model
-if (ROOT / "Model").exists():
-    DATA_DIR = ROOT / "Model"
-elif (ROOT / "backend" / "Model").exists():
-    DATA_DIR = ROOT / "backend" / "Model"
-else:
+# Check potential locations for the Model folder
+possible_dirs = [
+    ROOT / "Model",
+    ROOT / "backend" / "Model",
+    Path("Model"),
+    Path("backend/Model")
+]
+
+DATA_DIR = None
+for d in possible_dirs:
+    if d.exists() and (d / "kepler_koi.csv").exists():
+        DATA_DIR = d
+        break
+
+if DATA_DIR is None:
+    # Fallback default if none contain the file yet
     DATA_DIR = ROOT / "Model"
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
