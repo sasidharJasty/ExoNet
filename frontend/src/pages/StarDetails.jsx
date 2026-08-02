@@ -76,9 +76,6 @@ const buildImageCandidateUrls = (explicitPath, identifier, { directory = "/stati
 
   const pushUrl = (path) => {
     if (!path) return;
-    // If the path is an absolute frontend-root path (starts with '/'), use it
-    // as-is so images served from the frontend `public/` folder (like
-    // `/shap_summary_class1.png`) are requested from the client origin.
     const fullPath = path.startsWith("http") || path.startsWith("/")
       ? path
       : `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -221,7 +218,7 @@ function PlanetarySystem({ star }) {
     const height = container.clientHeight || window.innerHeight * 0.6;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x030511);
+    scene.background = new THREE.Color(0x000000);
 
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 500);
     camera.position.set(0, 12, 28);
@@ -507,8 +504,6 @@ export default function StarDetails({ stars = [] }) {
 
   const classificationImageCandidates = useMemo(
     () =>
-      // Always prefer the bundled snapshot explanation image for the quick "snap" view.
-      // This uses the file placed in the frontend public root: /shap_summary_class1.png
       buildImageCandidateUrls('/shap_summary_class1.png', starIdentifier, {
         directory: "/static",
         suffix: ".png",
@@ -518,7 +513,6 @@ export default function StarDetails({ stars = [] }) {
 
   const habitabilityImageCandidates = useMemo(
     () =>
-      // Prefer the same bundled snapshot for habitability explanations as well.
       buildImageCandidateUrls('/shap_summary_class1.png', habitabilityPayload?.id, {
         directory: "/static/habitability",
         suffix: "_habitability.png",
@@ -584,11 +578,26 @@ export default function StarDetails({ stars = [] }) {
           alignItems: "center",
           justifyContent: "center",
           height: "calc(100vh - 60px)",
-          color: "#f0f4ff",
-          background: "radial-gradient(circle at top, #121a3b, #05060f)",
+          color: "#fff",
+          background: "#000000",
+          fontFamily: "'Inter', system-ui, sans-serif"
         }}
       >
-        Loading star system...
+        <div style={{ textAlign: "center" }}>
+          <div style={{ 
+            width: 40, 
+            height: 40, 
+            border: "2px solid #fff", 
+            borderRadius: "50%", 
+            borderTopColor: "transparent", 
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 16px"
+          }} />
+          <p style={{ fontSize: "14px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#888" }}>Loading star system...</p>
+        </div>
+        <style>{`
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
       </div>
     );
   }
@@ -603,12 +612,13 @@ export default function StarDetails({ stars = [] }) {
           flexDirection: "column",
           gap: "12px",
           height: "calc(100vh - 60px)",
-          color: "#ff6b6b",
-          background: "radial-gradient(circle at top, #121a3b, #05060f)",
+          color: "#fff",
+          background: "#000000",
+          fontFamily: "'Inter', system-ui, sans-serif"
         }}
       >
-        <h2 style={{ margin: 0 }}>We couldn't find that star.</h2>
-        <p style={{ margin: 0, color: "#f0f4ff" }}>{error}</p>
+        <h2 style={{ margin: 0, fontSize: "24px", fontWeight: 500 }}>Star Not Found</h2>
+        <p style={{ margin: 0, color: "#888", fontSize: "14px" }}>{error}</p>
       </div>
     );
   }
@@ -623,11 +633,12 @@ export default function StarDetails({ stars = [] }) {
         display: "flex",
         flexDirection: "row",
         height: "calc(100vh - 60px)",
-        background: "linear-gradient(135deg, rgba(4,6,20,0.95) 0%, rgba(10,12,28,0.98) 100%)",
-        color: "#f2f6ff",
+        background: "#000000",
+        color: "#fff",
+        fontFamily: "'Inter', system-ui, sans-serif"
       }}
     >
-      <div style={{ flex: "1 1 60%", position: "relative" }}>
+      <div style={{ flex: "1 1 60%", position: "relative", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
         <button
           type="button"
           onClick={() => {
@@ -639,40 +650,45 @@ export default function StarDetails({ stars = [] }) {
           }}
           style={{
             position: "absolute",
-            top: 20,
-            right: 20,
+            top: 24,
+            right: 24,
             zIndex: 3,
-            background: "rgba(0,0,0,0.55)",
-            color: "#f2f6ff",
-            border: "1px solid rgba(157,181,255,0.4)",
-            padding: "8px 14px",
+            background: "rgba(255,255,255,0.05)",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.1)",
+            padding: "8px 16px",
             borderRadius: "999px",
             cursor: "pointer",
-            fontSize: "13px",
-            letterSpacing: "0.04em",
+            fontSize: "12px",
+            fontWeight: 600,
             textTransform: "uppercase",
-            backdropFilter: "blur(4px)",
+            letterSpacing: "0.05em",
+            backdropFilter: "blur(10px)",
+            transition: "all 0.2s ease",
           }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
         >
           ← Back
         </button>
         <div
           style={{
             position: "absolute",
-            top: 20,
-            left: 20,
+            top: 24,
+            left: 24,
             zIndex: 2,
-            background: "rgba(0,0,0,0.45)",
-            padding: "12px 18px",
-            borderRadius: "10px",
-            backdropFilter: "blur(4px)",
+            background: "rgba(255,255,255,0.03)",
+            padding: "12px 20px",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            backdropFilter: "blur(10px)",
           }}
         >
-          <h1 style={{ margin: 0, fontSize: "24px" }}>
+          <h1 style={{ margin: 0, fontSize: "24px", fontWeight: 500, letterSpacing: "-0.02em" }}>
             {star.name || star.target_id || "Unnamed Star"}
           </h1>
-          <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#9db5ff" }}>
-            Mission: {star.mission || "Unknown"}
+          <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#888" }}>
+            Mission: <span style={{ color: "#fff" }}>{star.mission || "Unknown"}</span>
           </p>
         </div>
         <PlanetarySystem star={star} />
@@ -681,17 +697,16 @@ export default function StarDetails({ stars = [] }) {
       <div
         style={{
           flex: "1 1 40%",
-          padding: "24px 28px",
+          padding: "32px",
           overflowY: "auto",
-          background: "rgba(3,5,20,0.8)",
-          boxShadow: "-12px 0 24px rgba(0,0,0,0.35)",
+          background: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(20px)",
         }}
       >
-        <section style={{ marginBottom: "24px" }}>
-          <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>AI Classification</h2>
-          <p style={{ marginTop: 0, marginBottom: "12px", color: "#9db5ff" }}>
-            Send this star's key metrics to the FastAPI <code>/classify</code> endpoint and fetch a fresh model
-            prediction together with an updated SHAP explanation plot.
+        <section style={{ marginBottom: "40px" }}>
+          <h2 style={{ marginBottom: "16px", fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em" }}>AI Classification</h2>
+          <p style={{ marginTop: 0, marginBottom: "20px", color: "#888", fontSize: "14px", lineHeight: "1.5" }}>
+            Predict the classification of this star system using our deep learning model and explain the decision via SHAP.
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
             <button
@@ -699,68 +714,71 @@ export default function StarDetails({ stars = [] }) {
               onClick={handleClassify}
               disabled={classifying}
               style={{
-                padding: "8px 18px",
-                background: "#3b82f6",
+                padding: "10px 20px",
+                background: "#fff",
                 border: "none",
-                borderRadius: "8px",
-                color: "white",
+                borderRadius: "6px",
+                color: "#000",
                 cursor: classifying ? "not-allowed" : "pointer",
-                opacity: classifying ? 0.7 : 1,
+                opacity: classifying ? 0.5 : 1,
                 fontWeight: 600,
-                letterSpacing: "0.02em",
+                fontSize: "13px",
+                transition: "opacity 0.2s",
               }}
+              onMouseEnter={(e) => !classifying && (e.currentTarget.style.opacity = 0.8)}
+              onMouseLeave={(e) => !classifying && (e.currentTarget.style.opacity = 1)}
             >
               {classifying ? "Classifying..." : "Run Classification"}
             </button>
             {classification && (
               <div
                 style={{
-                  padding: "8px 14px",
-                  borderRadius: "8px",
-                  background: "rgba(25,35,70,0.75)",
-                  border: "1px solid rgba(80,110,200,0.3)",
-                  color: "#9fffc3",
-                  fontSize: "14px",
+                  padding: "10px 16px",
+                  borderRadius: "6px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "#fff",
+                  fontSize: "13px",
                 }}
               >
-                Model prediction code: <strong>{classification.prediction}</strong>
+                Prediction: <strong style={{ color: "#fff" }}>{classification.prediction}</strong>
               </div>
             )}
           </div>
           {classificationError && (
-            <p style={{ marginTop: "12px", color: "#ff7878" }}>{classificationError}</p>
+            <p style={{ marginTop: "12px", color: "#ff8080", fontSize: "13px" }}>{classificationError}</p>
           )}
-          <div style={{ marginTop: "16px" }}>
-            <h4 style={{ margin: 0, marginBottom: "8px", fontSize: "14px", color: "#9db5ff" }}>
-              Feature vector sent to the model
+          <div style={{ marginTop: "24px" }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Model Feature Vector
             </h4>
             <table
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
                 fontSize: "12px",
-                border: "1px solid rgba(80,110,200,0.2)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: "8px",
                 overflow: "hidden",
               }}
             >
-              <thead style={{ background: "rgba(16,22,46,0.85)", color: "#9db5ff" }}>
+              <thead style={{ background: "rgba(255,255,255,0.05)", color: "#888" }}>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "6px 8px" }}>Feature</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Value</th>
-                  <th style={{ textAlign: "right", padding: "6px 8px" }}>Raw</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 500 }}>Feature</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", fontWeight: 500 }}>Value</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", fontWeight: 500 }}>Raw</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style={{ color: "#fff" }}>
                 {featureSummary.map(({ key, value, original }) => (
-                  <tr key={key} style={{ background: "rgba(12,16,34,0.6)" }}>
-                    <td style={{ padding: "6px 8px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  <tr key={key} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td style={{ padding: "8px 12px", textTransform: "uppercase", color: "#aaa" }}>
                       {key}
                     </td>
-                    <td style={{ padding: "6px 8px", textAlign: "right", color: "#f5f8ff" }}>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: "#fff" }}>
                       {Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 3 }) : value}
                     </td>
-                    <td style={{ padding: "6px 8px", textAlign: "right", color: "#9db5ff" }}>
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: "#888" }}>
                       {original === undefined || original === null || original === ""
                         ? "—"
                         : Number.isFinite(original)
@@ -774,11 +792,10 @@ export default function StarDetails({ stars = [] }) {
           </div>
         </section>
 
-        <section style={{ marginBottom: "24px" }}>
-          <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>Habitability Analysis</h2>
-          <p style={{ marginTop: 0, marginBottom: "12px", color: "#9db5ff" }}>
-            Evaluate this star system with the habitability meta-model, returning an overall score and
-            explanation of the driving engineered features.
+        <section style={{ marginBottom: "40px" }}>
+          <h2 style={{ marginBottom: "16px", fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em" }}>Habitability Analysis</h2>
+          <p style={{ marginTop: 0, marginBottom: "20px", color: "#888", fontSize: "14px", lineHeight: "1.5" }}>
+            Evaluate system habitability with our meta-model and explore engineered feature weights.
           </p>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
             <button
@@ -786,16 +803,19 @@ export default function StarDetails({ stars = [] }) {
               onClick={handleHabitability}
               disabled={habitabilityLoading || !habitabilityPayload}
               style={{
-                padding: "8px 18px",
-                background: "#22c55e",
+                padding: "10px 20px",
+                background: "#fff",
                 border: "none",
-                borderRadius: "8px",
-                color: "white",
+                borderRadius: "6px",
+                color: "#000",
                 cursor: habitabilityLoading ? "not-allowed" : "pointer",
-                opacity: habitabilityLoading ? 0.7 : 1,
+                opacity: habitabilityLoading ? 0.5 : 1,
                 fontWeight: 600,
-                letterSpacing: "0.02em",
+                fontSize: "13px",
+                transition: "opacity 0.2s",
               }}
+              onMouseEnter={(e) => !(habitabilityLoading || !habitabilityPayload) && (e.currentTarget.style.opacity = 0.8)}
+              onMouseLeave={(e) => !(habitabilityLoading || !habitabilityPayload) && (e.currentTarget.style.opacity = 1)}
             >
               {habitabilityLoading ? "Evaluating..." : "Run Habitability"}
             </button>
@@ -804,201 +824,194 @@ export default function StarDetails({ stars = [] }) {
                 style={{
                   display: "flex",
                   gap: "16px",
-                  flexWrap: "wrap",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  background: "rgba(24,46,36,0.75)",
-                  border: "1px solid rgba(88,196,133,0.35)",
+                  padding: "10px 16px",
+                  borderRadius: "6px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  fontSize: "13px",
                 }}
               >
-                <span style={{ color: "#d1fae5", fontSize: "14px" }}>
-                  Label: <strong>{habitability.label ?? "—"}</strong>
+                <span style={{ color: "#aaa" }}>
+                  Label: <strong style={{ color: "#fff" }}>{habitability.label ?? "—"}</strong>
                 </span>
-                <span style={{ color: "#bef264", fontSize: "14px" }}>
-                  Score: <strong>{
-                    typeof habitability?.score === "number" && Number.isFinite(habitability.score)
+                <span style={{ color: "#aaa" }}>
+                  Score: <strong style={{ color: "#fff" }}>
+                    {typeof habitability?.score === "number" && Number.isFinite(habitability.score)
                       ? `${(habitability.score * 100).toFixed(2)}%`
-                      : "—"
-                  }</strong>
-                </span>
-              </div>
-            )}
-          </div>
-          {habitabilityError && (
-            <p style={{ marginTop: "12px", color: "#ff7878" }}>{habitabilityError}</p>
-          )}
-          {habitabilityFeatureRows.length > 0 && (
-            <div style={{ marginTop: "16px" }}>
-              <h4 style={{ margin: 0, marginBottom: "8px", fontSize: "14px", color: "#9db5ff" }}>
-                Engineered features supplied to the habitability model
-              </h4>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "12px",
-                  border: "1px solid rgba(70,150,120,0.25)",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
-              >
-                <thead style={{ background: "rgba(20,42,32,0.9)", color: "#9db5ff" }}>
-                  <tr>
-                    <th style={{ textAlign: "left", padding: "6px 8px" }}>Feature</th>
-                    <th style={{ textAlign: "right", padding: "6px 8px" }}>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {habitabilityFeatureRows.map(([key, value]) => (
-                    <tr key={key} style={{ background: "rgba(12,22,18,0.65)" }}>
-                      <td
-                        style={{
-                          padding: "6px 8px",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                          color: "#86efac",
-                        }}
-                      >
-                        {key}
-                      </td>
-                      <td style={{ padding: "6px 8px", textAlign: "right", color: "#f5f8ff" }}>
-                        {Number.isFinite(value)
-                          ? value.toLocaleString(undefined, { maximumFractionDigits: 4 })
-                          : value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      : "—"}
+                </strong>
+              </span>
             </div>
           )}
-          
-        </section>
-
-        <section style={{ marginBottom: "24px" }}>
-          <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>System Snapshot</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: "12px",
-            }}
-          >
-            {[
-              { label: "Right Ascension", value: star.ra, unit: "°" },
-              { label: "Declination", value: star.dec, unit: "°" },
-              { label: "Orbital Period", value: star.period_days, unit: "days" },
-              { label: "Transit Duration", value: star.transit_duration_hours, unit: "hours" },
-              { label: "Planet Radius", value: star.planet_radius_re, unit: "R⊕" },
-              { label: "Stellar Radius", value: star.stellar_radius_rs, unit: "R☉" },
-              { label: "Stellar Teff", value: star.stellar_teff_k, unit: "K" },
-              { label: "Log g", value: star.stellar_logg },
-              { label: "Signal-to-Noise", value: star.snr },
-              { label: "Depth", value: star.depth_ppm, unit: "ppm" },
-              { label: "Disposition", value: star.disposition },
-              { label: "Catalog", value: star.source },
-            ].map(({ label, value, unit }) => (
-              <div
-                key={label}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  background: "rgba(16,22,46,0.85)",
-                  border: "1px solid rgba(80,110,200,0.25)",
-                }}
-              >
-                <p style={{ margin: 0, fontSize: "12px", color: "#9db5ff" }}>{label}</p>
-                <p style={{ margin: "4px 0 0", fontSize: "16px" }}>
-                  {value !== undefined && value !== null && value !== ""
-                    ? `${typeof value === "number" && Number.isFinite(value)
-                        ? value.toLocaleString(undefined, { maximumFractionDigits: 3 })
-                        : value}${unit ? ` ${unit}` : ""}`
-                    : "—"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>Raw Data</h2>
-          <div
-            style={{
-              borderRadius: "10px",
-              border: "1px solid rgba(80,110,200,0.25)",
-              overflow: "hidden",
-            }}
-          >
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-              <tbody>
-                {entries.map(([key, value]) => (
-                  <tr key={key} style={{ background: "rgba(12,16,34,0.75)" }}>
-                    <td
-                      style={{
-                        padding: "8px 10px",
-                        borderBottom: "1px solid rgba(80,110,200,0.15)",
-                        color: "#8ea3d8",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                        width: "40%",
-                      }}
-                    >
+        </div>
+        {habitabilityError && (
+          <p style={{ marginTop: "12px", color: "#ff8080", fontSize: "13px" }}>{habitabilityError}</p>
+        )}
+        {habitabilityFeatureRows.length > 0 && (
+          <div style={{ marginTop: "24px" }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Engineered Model Features
+            </h4>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "12px",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "8px",
+                overflow: "hidden",
+              }}
+            >
+              <thead style={{ background: "rgba(255,255,255,0.05)", color: "#888" }}>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "8px 12px", fontWeight: 500 }}>Feature</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", fontWeight: 500 }}>Value</th>
+                </tr>
+              </thead>
+              <tbody style={{ color: "#fff" }}>
+                {habitabilityFeatureRows.map(([key, value]) => (
+                  <tr key={key} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td style={{ padding: "8px 12px", textTransform: "uppercase", color: "#aaa" }}>
                       {key}
                     </td>
-                    <td
-                      style={{
-                        padding: "8px 10px",
-                        borderBottom: "1px solid rgba(80,110,200,0.1)",
-                        color: "#f5f8ff",
-                      }}
-                    >
-                      {formatDetailValue(value)}
+                    <td style={{ padding: "8px 12px", textAlign: "right", color: "#fff" }}>
+                      {Number.isFinite(value)
+                        ? value.toLocaleString(undefined, { maximumFractionDigits: 4 })
+                        : value}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </section>
+        )}
+      </section>
 
-        {classificationImageCandidates.length > 0 && (
-          <section style={{ marginTop: "24px" }}>
-            <h2 style={{ marginBottom: "12px", fontSize: "20px" }}>Classification SHAP Explanation</h2>
+      <section style={{ marginBottom: "40px" }}>
+        <h2 style={{ marginBottom: "16px", fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em" }}>System Snapshot</h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+            gap: "12px",
+          }}
+        >
+          {[
+            { label: "Right Ascension", value: star.ra, unit: "°" },
+            { label: "Declination", value: star.dec, unit: "°" },
+            { label: "Orbital Period", value: star.period_days, unit: "days" },
+            { label: "Transit Duration", value: star.transit_duration_hours, unit: "hours" },
+            { label: "Planet Radius", value: star.planet_radius_re, unit: "R⊕" },
+            { label: "Stellar Radius", value: star.stellar_radius_rs, unit: "R☉" },
+            { label: "Stellar Teff", value: star.stellar_teff_k, unit: "K" },
+            { label: "Log g", value: star.stellar_logg },
+            { label: "Signal-to-Noise", value: star.snr },
+            { label: "Depth", value: star.depth_ppm, unit: "ppm" },
+            { label: "Disposition", value: star.disposition },
+            { label: "Catalog", value: star.source },
+          ].map(({ label, value, unit }) => (
             <div
+              key={label}
               style={{
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(80,110,200,0.25)",
-                background: "rgba(12,16,34,0.75)",
+                padding: "12px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.1)",
               }}
             >
-              {!classificationImage.hidden && classificationImage.src ? (
-                <img
-                  src={classificationImage.src}
-                  alt={`SHAP explanation for ${star.target_id || star.id || starIdentifier}`}
-                  style={{ width: "100%", display: "block" }}
-                  onError={classificationImage.handleError}
-                />
-              ) : (
-                <div
-                  style={{
-                    padding: "16px",
-                    color: "#9db5ff",
-                    fontSize: "13px",
-                    textAlign: "center",
-                  }}
-                >
-                  We couldn't load a classification SHAP image yet. Run the classification above to generate a new
-                  explanation.
-                </div>
-              )}
-              <p style={{ padding: "12px", margin: 0, color: "#9db5ff", fontSize: "12px" }}>
-                Generated explainability plot for classification model (if available).
+              <p style={{ margin: 0, fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.03em" }}>{label}</p>
+              <p style={{ margin: "4px 0 0", fontSize: "14px", fontWeight: 500, color: "#fff" }}>
+                {value !== undefined && value !== null && value !== ""
+                  ? `${typeof value === "number" && Number.isFinite(value)
+                      ? value.toLocaleString(undefined, { maximumFractionDigits: 3 })
+                      : value}${unit ? ` ${unit}` : ""}`
+                  : "—"}
               </p>
             </div>
-          </section>
-        )}
-      </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 style={{ marginBottom: "16px", fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em" }}>Raw Data</h2>
+        <div
+          style={{
+            borderRadius: "8px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            overflow: "hidden",
+            background: "rgba(255,255,255,0.02)",
+          }}
+        >
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <tbody style={{ color: "#fff" }}>
+              {entries.map(([key, value]) => (
+                <tr key={key} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <td
+                    style={{
+                      padding: "8px 12px",
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                      width: "40%",
+                      fontSize: "11px"
+                    }}
+                  >
+                    {key}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 12px",
+                      color: "#fff",
+                      fontSize: "12px"
+                    }}
+                  >
+                    {formatDetailValue(value)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {classificationImageCandidates.length > 0 && (
+        <section style={{ marginTop: "40px" }}>
+          <h2 style={{ marginBottom: "16px", fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em" }}>Classification SHAP Explanation</h2>
+          <div
+            style={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.02)",
+            }}
+          >
+            {!classificationImage.hidden && classificationImage.src ? (
+              <img
+                src={classificationImage.src}
+                alt={`SHAP explanation for ${star.target_id || star.id || starIdentifier}`}
+                style={{ width: "100%", display: "block" }}
+                onError={classificationImage.handleError}
+              />
+            ) : (
+              <div
+                style={{
+                  padding: "24px",
+                  color: "#888",
+                  fontSize: "13px",
+                  textAlign: "center",
+                }}
+              >
+                We couldn't load a classification SHAP image yet. Run the classification above to generate a new
+                explanation.
+              </div>
+            )}
+            <p style={{ padding: "12px", margin: 0, color: "#888", fontSize: "12px", textAlign: "center" }}>
+              Generated explainability plot for classification model (if available).
+            </p>
+          </div>
+        </section>
+      )}
     </div>
+  </div>
   );
 }

@@ -3,7 +3,7 @@ export const BASE_URL = "http://127.0.0.1:8000"; // replace with your domain or 
 // If true, when backend requests fail or return empty results, fall back to the
 // bundled CSV at `public/combined_catalog.csv`. Toggle this to false to always
 // rely on the backend.
-export const LOCAL_CATALOG_FALLBACK = false;
+export const LOCAL_CATALOG_FALLBACK = true;
 export const LOCAL_CATALOG_PATH = "/combined_catalog.csv"; // Model was already ran on this file
 
 let _localCatalogCache = null;
@@ -127,12 +127,18 @@ export async function fetchStarById(starId) {
 
 export async function pingBackend() {
   try {
-    const res = await fetch(`${BASE_URL}/ping`);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Ping failed: ${res.status} ${text}`);
+    if (LOCAL_CATALOG_FALLBACK) {
+
+
+      return { "message": "pong" }
+    } else {
+      const res = await fetch(`${BASE_URL}/ping`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Ping failed: ${res.status} ${text}`);
+      }
+      return await res.json();
     }
-    return await res.json();
   } catch (err) {
     console.error("pingBackend error:", err);
     throw err;

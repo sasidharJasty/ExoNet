@@ -75,11 +75,12 @@ export default function Navbar() {
     <nav
       style={{
         padding: "0.85rem 1.5rem",
-        background: "#0b0c17",
+        background: "#000000",
         color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
       }}
     >
       <div>
@@ -190,22 +191,22 @@ export default function Navbar() {
             zIndex: 9999,
           }}
         >
-          <div style={{ width: 420, background: "#0b1220", color: "#fff", padding: 20, borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,0.6)" }}>
-            <h3 style={{ marginTop: 0 }}>Tip: Open a star</h3>
-            <p style={{ marginTop: 8, color: "#cbd6ff" }}>
-              To open a specific star's details, right-click (context menu) on the star in the main view and select "Open". This will open a full-page detail view including AI classification and explainability plots.
+          <div style={{ width: 420, background: "#000000", color: "#fff", padding: 20, borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 30px rgba(0,0,0,0.8)" }}>
+            <h3 style={{ marginTop: 0, fontWeight: 500 }}>Tip: Explore the Stars</h3>
+            <p style={{ marginTop: 8, color: "#aaaaaa" }}>
+              Right-click on a star to see more info, details, and deeper analysis.
             </p>
-            <p style={{ marginTop: 8, color: "#cbd6ff" }}>
-              Controls in the 3D view: left-click and drag to rotate / move the camera, right-click and drag to pan the scene, and use the mouse wheel or pinch gesture to zoom in and out.
+            <p style={{ marginTop: 8, color: "#aaaaaa" }}>
+              Controls in the 3D view: left-click and drag to rotate, right-click and drag to pan, and use the mouse wheel to zoom.
             </p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={dontShowAgain}
                   onChange={(e) => setDontShowAgain(e.target.checked)}
                 />
-                <span style={{ color: "#9db5ff" }}>Don't show again</span>
+                <span style={{ color: "#888" }}>Don't show again</span>
               </label>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
@@ -216,7 +217,7 @@ export default function Navbar() {
                     }
                     setShowHint(false);
                   }}
-                  style={{ padding: "8px 12px", borderRadius: 8, border: "none", background: "#3b82f6", color: "white", cursor: "pointer" }}
+                  style={{ padding: "8px 16px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.2)", background: "#fff", color: "#000", cursor: "pointer", fontWeight: 600 }}
                 >
                   Got it
                 </button>

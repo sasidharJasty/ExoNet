@@ -18,6 +18,7 @@ export default function Starfield({ stars = [] }) {
 
   const [hoveredStar, setHoveredStar] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [showQuickHint, setShowQuickHint] = useState(true);
   const [colorMode, setColorMode] = useState("mission");
   const [selectedFeature, setSelectedFeature] = useState("stellar_teff_k");
   const [featureFilter, setFeatureFilter] = useState("");
@@ -33,6 +34,11 @@ export default function Starfield({ stars = [] }) {
     0: new THREE.Color(0x888888),
     default: new THREE.Color(0xaaaaaa),
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowQuickHint(false), 8000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!stars.length) return;
@@ -237,9 +243,32 @@ export default function Starfield({ stars = [] }) {
             borderRadius: "4px",
             pointerEvents: "none",
             whiteSpace: "nowrap",
+            fontSize: '12px',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}
         >
           {hoveredStar.target_id || hoveredStar.name || "Unknown"}
+        </div>
+      )}
+
+      {showQuickHint && (
+        <div style={{
+          position: 'absolute',
+          bottom: 80,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          color: '#fff',
+          padding: '8px 16px',
+          borderRadius: '20px',
+          fontSize: '13px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(4px)',
+          transition: 'opacity 0.5s ease',
+          pointerEvents: 'none',
+          zIndex: 9997
+        }}>
+          Right-click on a star to see more info and more tips
         </div>
       )}
 
@@ -255,13 +284,19 @@ export default function Starfield({ stars = [] }) {
           zIndex: 9998,
           width: 44,
           height: 44,
-          borderRadius: 10,
-          border: "none",
-          background: "rgba(11,13,23,0.9)",
+          borderRadius: 12,
+          border: "1px solid rgba(255,255,255,0.1)",
+          background: "rgba(0,0,0,0.7)",
           color: "#fff",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
           cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s ease",
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.7)")}
       >
         ⚙️
       </button>
@@ -277,56 +312,60 @@ export default function Starfield({ stars = [] }) {
             top: 60,
             zIndex: 9999,
             width: 320,
-            background: "linear-gradient(180deg, rgba(6,10,20,0.98), rgba(8,12,24,0.96))",
+            background: "rgba(0,0,0,0.85)",
+            backdropFilter: "blur(10px)",
             color: "#fff",
             padding: 14,
             borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.1)",
             boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <strong style={{ fontSize: 16 }}>Display Controls</strong>
+            <strong style={{ fontSize: 16, fontWeight: 500 }}>Display Controls</strong>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button onClick={() => { setColorMode('mission'); }} style={{ padding: 6, borderRadius: 8, background: colorMode === 'mission' ? '#25406a' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>Mission</button>
-              <button onClick={() => { setColorMode('feature'); }} style={{ padding: 6, borderRadius: 8, background: colorMode === 'feature' ? '#25406a' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer' }}>Feature</button>
-              <button onClick={() => setControlsOpen(false)} aria-label="Close" style={{ background: 'transparent', border: 'none', color: '#cbd6ff', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => { setColorMode('mission'); }} style={{ padding: '6px 10px', borderRadius: 8, background: colorMode === 'mission' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Mission</button>
+              <button onClick={() => { setColorMode('feature'); }} style={{ padding: '6px 10px', borderRadius: 8, background: colorMode === 'feature' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Feature</button>
+              <button onClick={() => setControlsOpen(false)} aria-label="Close" style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', fontSize: '14px' }}>✕</button>
             </div>
           </div>
 
           <div style={{ maxHeight: 340, overflowY: 'auto' }}>
             {colorMode === 'feature' && stars[0] && (
-              <div>
+              <div style={{ color: '#aaa' }}>
                 <div style={{ fontSize: 12, marginBottom: 8 }}>Feature (search and click)</div>
                 <input
                   type="text"
                   placeholder="Filter features..."
                   value={featureFilter}
                   onChange={(e) => setFeatureFilter(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', color: '#fff', marginBottom: 10 }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', marginBottom: 10, fontSize: '13px', boxSizing: 'border-box' }}
                 />
-                <div style={{ maxHeight: 180, overflowY: 'auto', borderRadius: 8, border: '1px solid rgba(255,255,255,0.03)', marginBottom: 10 }}>
+                <div style={{ maxHeight: 180, overflowY: 'auto', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)', marginBottom: 10 }}>
                   {Object.keys(stars[0]).filter((key) => typeof stars[0][key] === 'number').filter((key) => key.toLowerCase().includes(featureFilter.toLowerCase())).map((key) => (
-                    <div key={key} onClick={() => { setSelectedFeature(key); setFeatureFilter(''); }} style={{ padding: '8px 10px', cursor: 'pointer', background: key === selectedFeature ? 'rgba(255,255,255,0.06)' : 'transparent', color: key === selectedFeature ? '#fff' : '#dfeaff' }}>{key}</div>
+                    <div key={key} onClick={() => { setSelectedFeature(key); setFeatureFilter(''); }} style={{ padding: '8px 10px', cursor: 'pointer', background: key === selectedFeature ? 'rgba(255,255,255,0.1)' : 'transparent', color: key === selectedFeature ? '#fff' : '#888', fontSize: '13px', transition: 'background 0.2s' }}>{key}</div>
                   ))}
                 </div>
                 <div style={{ fontSize: 12, marginBottom: 6 }}>Range</div>
-                <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.min} onChange={(e) => setFilterRange((c) => ({ ...c, min: parseFloat(e.target.value) }))} />
-                <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.max} onChange={(e) => setFilterRange((c) => ({ ...c, max: parseFloat(e.target.value) }))} />
-                <div style={{ fontSize: 12, marginTop: 6 }}>Showing {filterRange.min.toFixed(2)} → {filterRange.max.toFixed(2)}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.min} onChange={(e) => setFilterRange((c) => ({ ...c, min: parseFloat(e.target.value) }))} style={{ width: '100%', cursor: 'pointer' }} />
+                  <input type="range" min={featureRange.min} max={featureRange.max} step={(featureRange.max - featureRange.min) / 100 || 0.01} value={filterRange.max} onChange={(e) => setFilterRange((c) => ({ ...c, max: parseFloat(e.target.value) }))} style={{ width: '100%', cursor: 'pointer' }} />
+                </div>
+                <div style={{ fontSize: 12, marginTop: 6, color: '#888' }}>Showing {filterRange.min.toFixed(2)} → {filterRange.max.toFixed(2)}</div>
               </div>
             )}
 
             {colorMode === 'mission' && (
-              <div>
+              <div style={{ color: '#aaa' }}>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                  <button onClick={() => setActiveMissions(Object.keys(missionLegend))} style={{ padding: '8px 10px', borderRadius: 8, background: '#25406a', color: '#fff', border: 'none', cursor: 'pointer' }}>Select all</button>
-                  <button onClick={() => setActiveMissions([])} style={{ padding: '8px 10px', borderRadius: 8, background: '#22283a', color: '#fff', border: 'none', cursor: 'pointer' }}>Clear</button>
+                  <button onClick={() => setActiveMissions(Object.keys(missionLegend))} style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px' }}>Select all</button>
+                  <button onClick={() => setActiveMissions([])} style={{ padding: '8px 10px', borderRadius: 8, background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: '12px' }}>Clear</button>
                 </div>
                 {Object.entries(missionLegend).map(([mission, color]) => (
-                  <div key={mission} onClick={() => setActiveMissions((prev) => prev.includes(mission) ? prev.filter((m) => m !== mission) : [...prev, mission])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: activeMissions.includes(mission) ? 'rgba(255,255,255,0.03)' : 'transparent', marginBottom: 8 }}>
-                    <div style={{ width: 18, height: 18, backgroundColor: color, borderRadius: 4, boxShadow: `0 6px 18px ${color}` }} />
-                    <div style={{ flex: 1 }}>{mission}</div>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: activeMissions.includes(mission) ? '#8ef7b6' : 'transparent', border: activeMissions.includes(mission) ? '1px solid rgba(0,0,0,0.2)' : '1px solid rgba(255,255,255,0.06)' }} />
+                  <div key={mission} onClick={() => setActiveMissions((prev) => prev.includes(mission) ? prev.filter((m) => m !== mission) : [...prev, mission])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: activeMissions.includes(mission) ? 'rgba(255,255,255,0.08)' : 'transparent', marginBottom: 8, transition: 'background 0.2s', fontSize: '13px' }}>
+                    <div style={{ width: 14, height: 14, backgroundColor: color, borderRadius: '50%', boxShadow: `0 0 10px ${color}` }} />
+                    <div style={{ flex: 1, color: activeMissions.includes(mission) ? '#fff' : '#888' }}>{mission}</div>
+                    <div style={{ width: 14, height: 14, borderRadius: '50%', background: activeMissions.includes(mission) ? '#fff' : 'transparent', border: activeMissions.includes(mission) ? 'none' : '1px solid rgba(255,255,255,0.2)' }} />
                   </div>
                 ))}
               </div>
