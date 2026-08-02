@@ -20,7 +20,7 @@ import xgboost as xgb
 # ------------------------------
 # Paths & directories
 # ------------------------------
-ROOT = Path("backend")
+ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "Model"
 STATIC_DIR = DATA_DIR / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -60,15 +60,18 @@ app = FastAPI(
 # Allow CORS from all origins (for dev)
 origins = [
     "https://exo-net.vercel.app",
-    "https://www.exo-net.vercel.app"  # add any variants you use
+    "https://www.exo-net.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    # add any variants you use
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,       # set True if you send cookies / auth
-    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-    allow_headers=["*"],
+    allow_origins=["*"],  # This allows requests from any origin (like localhost:5174)
+        allow_credentials=True,
+        allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+        allow_headers=["*"],  # Allows all headers
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -492,11 +495,11 @@ def generate_habitability_shap_image(X_scaled_df: pd.DataFrame, star_id: str):
 # Routes
 # ------------------------------
 @app.get("/ping")
-def ping(): 
+def ping():
     return {"message": "pong"}
 
 @app.get("/stars")
-def get_stars(): 
+def get_stars():
     return stars
 
 @app.get("/star/{star_id}")
